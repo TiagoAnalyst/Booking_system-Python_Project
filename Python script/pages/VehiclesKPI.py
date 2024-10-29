@@ -26,7 +26,7 @@ layout = dbc.Container(
                     for x in dropdown_list_fy
                     ],
                 multi=False,
-                value='2023-2024' #default selection
+                value='2021-2022' #default selection
             ),
             width=2
         ),
