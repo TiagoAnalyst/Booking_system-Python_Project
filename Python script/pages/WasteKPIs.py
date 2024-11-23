@@ -4,18 +4,18 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 from Data_prep import dropdown_list_month,dropdown_list_fy
-from Charts import most_visitors_month, busiest_times_per_dayofweek
+from Charts import materials_brought_summary, materials_brought_recycling_cat,materials_brought_non_recyclables_cat,materials_brought_DIY_cat
 
 # register page 
 
-register_page(__name__, name = "Vehicles KPIs", path='/Vehicles_KPIs')
+register_page(__name__, name = "Waste KPIs", path='/Waste_KPIs')
 
 layout = dbc.Container(
     [
         dbc.Row(
     [
         dbc.Col(
-            html.Div('Financial Year filter:',className="dropdown-label"),
+            html.Div('Please choose a financial year:',className="dropdown-label"),
             width="auto"
         ),
         dbc.Col(
@@ -31,13 +31,16 @@ layout = dbc.Container(
             width=2
         ),
         dbc.Col(
-            html.Div('Month filter:',className="dropdown-label"),
+            html.Div('Please choose a month:',className="dropdown-label"),
             width="auto",
         ),
         dbc.Col(
             dcc.Dropdown(
                 id='slct_month',
-                options=[{'label': x, 'value': x} for x in dropdown_list_month],
+                options=[
+                    {'label': x, 'value': x} 
+                    for x in dropdown_list_month
+                    ],
                 multi=False,
                 value= "January" # default selection
             ),
@@ -50,14 +53,14 @@ layout = dbc.Container(
             [
                 dbc.Col(
                     dcc.Graph(
-                        id='chart7',
+                        id='chart10',
                         figure={}
                     ),
                     width=6
                 ),
                 dbc.Col(
                     dcc.Graph(
-                        id='chart8',
+                        id='chart11',
                         figure={}
                     ),
                     width=6
@@ -65,6 +68,25 @@ layout = dbc.Container(
             ],
             className="mb-4"
         ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    dcc.Graph(
+                        id='chart12',
+                        figure={}
+                    ),
+                    width=6
+                ),
+                dbc.Col(
+                    dcc.Graph(
+                        id='chart13',
+                        figure={}
+                    ),
+                    width=6
+                )
+            ],
+            className="mb-4"
+        )
     ],
     fluid=True
 )
@@ -74,8 +96,10 @@ layout = dbc.Container(
 
 @callback(
     [
-        Output(component_id='chart7',component_property='figure'),
-        Output(component_id='chart8',component_property='figure')
+        Output(component_id='chart10',component_property='figure'),
+        Output(component_id='chart11',component_property='figure'),
+        Output(component_id='chart12',component_property='figure'),
+        Output(component_id='chart13',component_property='figure')
     ],    
     [
         Input(component_id='slct_fy', component_property='value'),
@@ -85,8 +109,10 @@ layout = dbc.Container(
 
 def update_plots(slct_fy,slct_month):
 
-    fig7 = most_visitors_month(slct_fy,slct_month)
-    fig8 = busiest_times_per_dayofweek(slct_fy,slct_month)
+    fig10 = materials_brought_summary(slct_fy,slct_month)
+    fig11 = materials_brought_recycling_cat(slct_fy,slct_month)
+    fig12 = materials_brought_non_recyclables_cat(slct_fy,slct_month)
+    fig13 = materials_brought_DIY_cat(slct_fy,slct_month)
     
-    return fig7, fig8
+    return fig10, fig11, fig12, fig13
 

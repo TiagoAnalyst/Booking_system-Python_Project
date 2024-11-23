@@ -4,11 +4,11 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 from Data_prep import dropdown_list_fy
-from Charts import evolution_bookings
+from Charts import evolution_bookings,materials_category_fy
 
 # register page
 
-register_page(__name__, name = "Main KPIs", path='/')
+register_page(__name__, name = "Yearly KPIs", path='/')
 
 
 #--------------------------------------------
@@ -19,7 +19,7 @@ layout = dbc.Container(
         dbc.Row(
     [
         dbc.Col(
-            html.Div('Please choose a financial year:', className="dropdown-label"),
+            html.Div(' Financial Year filter:', className="dropdown-label"),
             width="auto"
         ),
         dbc.Col(
@@ -46,6 +46,13 @@ layout = dbc.Container(
                     ),
                     width=6
                 ),
+                dbc.Col(
+                    dcc.Graph(
+                        id = 'chart20',
+                        figure={}
+                    ),
+                    width=6
+                )
             ],
             className="mb-4",
         ),
@@ -56,14 +63,20 @@ layout = dbc.Container(
 #--------------------------------------------------------------------
 
 @callback(
-    Output(component_id='chart5',component_property='figure'),
-    Input(component_id='slct_fy', component_property='value')
+    [
+        Output(component_id='chart5',component_property='figure'),
+        Output(component_id='chart20',component_property='figure')
+    ],
+    [
+        Input(component_id='slct_fy', component_property='value')
+    ]
 )
 
 def update_plots(slct_fy):
 
     fig5 = evolution_bookings(slct_fy)
+    fig20 = materials_category_fy(slct_fy)
 
-    return fig5
+    return fig5, fig20
 
 #--------------------------------------------------------------------

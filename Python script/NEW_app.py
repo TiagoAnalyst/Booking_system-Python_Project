@@ -2,15 +2,19 @@ import dash
 from dash import Dash, dcc, html, page_container, page_container
 import dash_bootstrap_components as dbc
 
-app = Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.SLATE, '/assets/custom.css'])
+app = Dash(__name__, 
+           use_pages=True, 
+           external_stylesheets=[dbc.themes.SLATE, '/assets/custom.css']
+           )
 
 #define navigation bar
 
 navbar=dbc.NavbarSimple(
     children=[
-        dbc.NavItem(dbc.NavLink('Main KPIs', href='/')),
-        dbc.NavItem(dbc.NavLink('Detailed KPIs', href='/Detailed_KPIs')),
-        dbc.NavItem(dbc.NavLink('Vehicles KPIs', href='/Vehicles_KPIs'))
+        dbc.NavItem(dbc.NavLink('Yearly KPIs', href='/')),
+        dbc.NavItem(dbc.NavLink('Monthly KPIs', href='/Detailed_KPIs')),
+        dbc.NavItem(dbc.NavLink('Vehicles KPIs', href='/Vehicles_KPIs')),
+        dbc.NavItem(dbc.NavLink('Waste KPIs', href='/Waste_KPIs'))
     ],
     brand = "Booking system dashboard - Recycling Centre A",
     brand_href='/',
@@ -23,7 +27,7 @@ navbar=dbc.NavbarSimple(
 footer = dbc.Container(
     dbc.Row(
         [
-            dbc.Col(html.A("Tiago Santos | Github", href='https://github.com/TiagoAnawlyst')),
+            dbc.Col(html.A("Tiago Santos | Github", href='https://github.com/TiagoAnalyst')),
         ],
     ),
     className='footer',

@@ -20,8 +20,8 @@ try:
     url2_data =  response2.content.decode('utf-8')
     
     #Read the CSV data into a DataFrame
-    BookingDetails = pd.read_csv(StringIO(url_data))
-    BookingCapacity = pd.read_csv(StringIO(url2_data))
+    booking_details = pd.read_csv(StringIO(url_data))
+    booking_capacity = pd.read_csv(StringIO(url2_data))
 
 except requests.exceptions.RequestException as e:
     print(f"Error fetching the file: {e}")
@@ -29,81 +29,91 @@ except requests.exceptions.RequestException as e:
 #----------------------------------------
 #Data preparation - Booking main dataset
 
-BookingDetails = (
-    BookingDetails
+booking_details = (
+    booking_details
     .rename(
         columns={
             'Mattresses (from your home only)':'Mattresses',
-            'Clothes and textiles (mixed)':'clothes and textiles',
-            'Site':'Transport type',
+            'Clothes and textiles (mixed)':'Clothes and textiles',
+            'Site':'transport type',
+            'Wooden furniture (whole or dismantled)':'Wooden furniture',
+            'Batteries (car & household)':'Batteries',
+            'Large domestic appliances (e.g. washing machines)':'Large domestic appliances',
+            'Gas bottles (small)':'Gas bottles',
+            'Tyres (maximum 2)':'Tyres',
+            'Plastics (bottles/pots/tubs/trays)':'Plastics - recyclables',
+            'Non-recyclables (black bin)':'Non-recyclables',
+            'Plastics (other)':'Plastics - Non recyclable',
+            'Paint (and dry empty metal paint cans)':'Paint',
+            'Garden wood (decking/fencing/shed)':'Garden wood',
+            'Wooden flooring (including laminate)':'Wooden flooring',
+            'Asbestos (needs to be double wrapped)':'Asbestos',
+            'Kitchen and bathroom fixtures and fixings':'Kitchen and bathroom fixtures',
+            'Garden cuttings and prunings':'Green waste'
         }
     )
     .assign(
-        Booking_date = lambda x: pd.to_datetime(x['Booking date/time'], format='%d/%m/%Y  %H:%M').dt.strftime('%d/%m/%Y'),
-        Booking_time = lambda y: pd.to_datetime(y['Booking date/time'], format='%d/%m/%Y  %H:%M').dt.strftime('%H:%M'),
-        Booking_dayofweek = lambda z: pd.to_datetime(z['Booking_date'], dayfirst=True).dt.day_name(),
-        Booking_month = lambda a: pd.to_datetime(a['Booking_date'], dayfirst=True).dt.month_name(),
-        Booking_year= lambda b: pd.to_datetime(b['Booking_date'], dayfirst=True).dt.year,
-        Booking_month_no = lambda i: pd.to_datetime(i['Booking_date'], format='%d/%m/%Y').dt.month,
-        Financial_year = lambda k: k.apply(
-            lambda t: f"{t['Booking_year']-1}-{t['Booking_year']}" if t['Booking_month_no']<4 else f"{t['Booking_year']}-{t['Booking_year']+1}",
-            axis=1
-        )
-    )
-    .drop(columns=['Booking date/time'])
-    .assign(
-        **{'Booking created': pd.to_datetime(BookingDetails['Booking created'], format="%d/%m/%Y %H:%M", errors='coerce').dt.date}
-    )
-    .assign(
         **{
-        'Transport type': lambda b: b['Transport type'].apply(lambda b: b[b.find('(')+1:b.find(')')]).str.lower()
+            'Booking date/time': pd.to_datetime(booking_details['Booking date/time'], format="%d/%m/%Y %H:%M", errors='coerce'),
+            'transport type': lambda b: b['transport type'].apply(lambda b: b[b.find('(')+1:b.find(')')]).str.lower(),
+            'booking_date': lambda b: b['Booking date/time'].dt.strftime('%d/%m/%Y'),
+            'booking_time': lambda b: b['Booking date/time'].dt.strftime('%H:%M'),
+            'booking_dayofweek': lambda z: z['Booking date/time'].dt.day_name(),
+            'booking_month': lambda a: a['Booking date/time'].dt.month_name(),
+            'booking_year': lambda b: b['Booking date/time'].dt.year,
+            'booking_month_no': lambda i: i['Booking date/time'].dt.month,
+            'financial_year': lambda k: k.apply(
+                lambda t:f"{t['booking_year']-1}-{t['booking_year']}" if t['booking_month_no']<4 else f"{t['booking_year']}-{t['booking_year']+1}",
+                axis=1
+            )
         }
     )
 )
 
     # data excluding booking status "cancelled by the customer"
 
-BookingDetails_attendance=BookingDetails[BookingDetails['BookingStatus'].isin(['Completed','No show'])]
+
 
 #----------------------------------------
 #Data preparation - Booking total capacity
 
-BookingCapacity = (
-    BookingCapacity
-    .assign(
-        **{
-        'Vehicle type': lambda x: x['Vehicle type'].apply(lambda y: y[y.find('(')+1:y.find(')')]).str.lower()
-        }
-    )
+booking_capacity = (
+    booking_capacity
     .rename(
         columns={
-            'Date':'Booking_date'
+            'Date':'booking_date'
+        }
+    )
+    .assign(
+        **{
+        'Vehicle_type': lambda x: x['Vehicle type'].apply(lambda y: y[y.find('(')+1:y.find(')')]).str.lower()
         }
     )
 )
 
+booking_capacity_total=booking_capacity.groupby('booking_date')['Number of spaces'].sum().reset_index(name="No. Bookings capacity")
+
 #------------------------------------------
 #Data preparation - Booking total capacity vs no. bookings made
 
-BookingCapacity_total=BookingCapacity.groupby('Booking_date')['Number of spaces'].sum().reset_index(name="No. Bookings capacity")
+bookings_details_summary = booking_details[booking_details['BookingStatus'].isin(['Completed','No show'])].groupby('booking_date')['BookingStatus'].count().reset_index(name="No. Bookings made")
 
-    # merge of both tables - final table
+bookings_details_capacity = pd.merge(
+    booking_capacity_total,
+    bookings_details_summary, 
+    left_on=None
+)
 
-vartemp = BookingDetails_attendance.groupby('Booking_date')['BookingStatus'].count().reset_index(name="No. Bookings made")
-
-BookingsDetails_Capacity = pd.merge(
-    BookingCapacity_total,
-    vartemp, 
-    left_on=None)
-
-BookingsDetails_Capacity = (
-    BookingsDetails_Capacity
+bookings_details_capacity = (
+    bookings_details_capacity
         .assign(
-            Booking_month = lambda a: pd.to_datetime(a['Booking_date'], dayfirst=True).dt.month_name(),
-            Booking_year= lambda b: pd.to_datetime(b['Booking_date'], dayfirst=True).dt.year,
-            Booking_month_no = lambda i: pd.to_datetime(i['Booking_date'], format='%d/%m/%Y').dt.month,
-            Financial_year = lambda y:y.apply(
-                lambda t: f"{t['Booking_year']-1}-{t['Booking_year']}" if t['Booking_month_no']<4 else f"{t['Booking_year']}-{t['Booking_year']+1}",
+            booking_date = lambda a: pd.to_datetime(a['booking_date'], dayfirst=True),
+            booking_month = lambda a: a['booking_date'].dt.month_name(),
+            booking_year= lambda b: b['booking_date'].dt.year,
+            booking_dayofweek = lambda z: z['booking_date'].dt.day_name(),
+            booking_month_no = lambda i: i['booking_date'].dt.month,
+            financial_year = lambda y:y.apply(
+                lambda t: f"{t['booking_year']-1}-{t['booking_year']}" if t['booking_month_no']<4 else f"{t['booking_year']}-{t['booking_year']+1}",
             axis=1
             )
         )
@@ -112,5 +122,10 @@ BookingsDetails_Capacity = (
 #------------------------------------------
 #Dropdown list
 
-dropdown_list_month =  BookingDetails['Booking_month'].unique()
-dropdown_list_fy = BookingDetails['Financial_year'].unique()
+dropdown_list_month =  ['January','February','March','April','May','June','July','August','September','October','November','December']
+dropdown_list_fy = booking_details['financial_year'].unique()
+
+#-------------------------------------------
+#Other lists 
+
+ordered_weekday = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
