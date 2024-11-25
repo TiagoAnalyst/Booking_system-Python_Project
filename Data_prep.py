@@ -7,8 +7,8 @@ from io import StringIO
 #----------------------------------------
 #URL of the the raw CSV files from GitHub
 
-url="https://raw.githubusercontent.com/TiagoAnalyst/Booking_system_dash-Python_Project/refs/heads/main/Data%20files/Recycling%20centre%20A%20-%20bookings.csv"
-url2="https://raw.githubusercontent.com/TiagoAnalyst/Booking_system_dash-Python_Project/refs/heads/main/Data%20files/Recycling%20centre%20A%20-%20max.%20capacity.csv"
+url="https://raw.githubusercontent.com/TiagoAnalyst/others/refs/heads/main/BS/RC%20-%20bookings.csv"
+url2="https://raw.githubusercontent.com/TiagoAnalyst/others/refs/heads/main/BS/RC%20-%20capacity.csv"
 
 # Attempt to fetch the CSV files using requests
 
