@@ -15,7 +15,7 @@ layout = dbc.Container(
         dbc.Row(
     [
         dbc.Col(
-            html.Div('Please choose a financial year:',className="dropdown-label"),
+            html.Div('Financial Year filter:',className="dropdown-label"),
             width="auto"
         ),
         dbc.Col(
@@ -31,7 +31,7 @@ layout = dbc.Container(
             width=2
         ),
         dbc.Col(
-            html.Div('Please choose a month:',className="dropdown-label"),
+            html.Div('Month filter:',className="dropdown-label"),
             width="auto",
         ),
         dbc.Col(
